@@ -27,6 +27,7 @@ import tensorflow as tf
 from caffe_classes import class_names
 
 import input_reader
+from input_reader import NUM_TRIALS
 
 train_x = zeros((1, 227,227,3)).astype(float32)
 train_y = zeros((1, 1000))
@@ -38,6 +39,8 @@ ydim = train_y.shape[1]
 
 TRAINING_PATH = "./DRIVE/training/images/"
 LABEL_PATH    = "./DRIVE/training/1st_manual/"
+
+NUM_TRIALS = 10
 
 drive = input_reader.create_dataset(TRAINING_PATH,LABEL_PATH)
 
@@ -85,6 +88,7 @@ def conv(input, kernel, biases, k_h, k_w, c_o, s_h, s_w,  padding="VALID", group
 x = tf.placeholder(tf.float32, (None,) + xdim)
 
 summary_op = tf.image_summary('conv1/features', x, max_images=1)
+
 #conv1
 #conv(11, 11, 96, 4, 4, padding='VALID', name='conv1')
 k_h = 11; k_w = 11; c_o = 96; s_h = 4; s_w = 4
@@ -157,9 +161,6 @@ conv5b = tf.Variable(net_data["conv5"][1])
 conv5_in = conv(conv4, conv5W, conv5b, k_h, k_w, c_o, s_h, s_w, padding="SAME", group=group)
 conv5 = tf.nn.relu(conv5_in)
 
-# Visualize conv5 features
-features = tf.transpose(conv5,(3,1,2,0))
-summary_op = tf.image_summary('conv1/features', features, max_images=10)
 
 #maxpool5
 #max_pool(3, 3, 2, 2, padding='VALID', name='pool5')
@@ -178,6 +179,9 @@ fc7W = tf.Variable(net_data["fc7"][0])
 fc7b = tf.Variable(net_data["fc7"][1])
 fc7 = tf.nn.relu_layer(fc6, fc7W, fc7b)
 
+# Visualize conv5 features
+#summary_op = tf.image_summary('conv1/features', features, max_images=10)
+
 #fc8
 #fc(1000, relu=False, name='fc8')
 fc8W = tf.Variable(net_data["fc8"][0])
@@ -191,49 +195,25 @@ prob = tf.nn.softmax(fc8)
 
 sess = tf.Session()
 
-cross_entropy = -tf.reduce_sum([1.0,1.0]*tf.log([1.0,1.0]))
-tf.scalar_summary("cross_entropy", cross_entropy)
+#cross_entropy = -tf.reduce_sum([1.0,1.0]*tf.log([1.0,1.0]))
+#tf.scalar_summary("cross_entropy", cross_entropy)
 merged = tf.merge_all_summaries()
-writer = tf.train.SummaryWriter('log/', sess.graph)
+#writer = tf.train.SummaryWriter('log/', sess.graph)
 
 init = tf.initialize_all_variables()
 sess.run(init)
 
-im1, label = drive.train.next_batch()
-summary_str, output = sess.run([merged, prob], feed_dict = {x:[im1]})
-writer.add_summary(summary_str, 0)
-################################################################################
+features = []
+labels = []
 
-#Output:
+for i in range(0,NUM_TRIALS):
+    im, label = drive.train.next_batch()
+    summary_str, output = sess.run([merged, prob], feed_dict = {x:[im]})
+    #writer.add_summary(summary_str, 0)
+    tf.transpose(fc7,(1,0))
+    features.append(fc7.eval(session=sess,feed_dict={x:[im]}))
+    labels.append(label)
 
-for input_im_ind in range(output.shape[0]):
-    inds = argsort(output)[input_im_ind,:]
-    print "Image", input_im_ind
-    for i in range(5):
-        print class_names[inds[-1-i]], output[input_im_ind, inds[-1-i]]
-
-
-sess.close()
-
-#svM
-sess = tf.InteractiveSession()
-sess.run(init)
-features = features.eval(feed_dict={x:[im1]})
 
 import svm
-svm.train(features, label)
-#for i in range(0,1):#range(0, features.get_shape()[0]):
-    #np.savetxt("foo.csv", features[0], delimiter=",")
-
-#from sklearn import svm
-"""import tensorflow.contrib.learn as skflow
-from tensorflow.python.framework import ops
-
-sess = tf.Session()
-with sess:
-    ops.reset_default_graph()
-    print features.get_shape()
-    features.eval()
-    
-classifier = skflow.TensorFlowLinearClassifier(n_classes=2)
-classifier.fit(features, label)"""
+svm.train(features, labels)

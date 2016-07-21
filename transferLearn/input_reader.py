@@ -3,7 +3,6 @@ import os
 import random
 
 from PIL import Image
-import tensorflow as tf
 
 BATCH_WIDTH = 227
 BATCH_HEIGHT = 227
@@ -69,15 +68,15 @@ def create_dataset(images_path, label_path):
             
             if not mostlyBlack(image):
                 images.append(numpy.array(image))
-                if mostlyBlack(label):
-                    labels.append(0)
+                if t%2 == 0:
+                    labels.append([0])
                 else:
-                    labels.append(1)
+                    labels.append([1])
 
                 t+=1
 
     #image = Image.open(images_path + files[1])
     #split_image(image)
-   # print numpy.shape(images)
+    #print numpy.shape(labels[0])
     train = Dataset(images, labels)
     return Drive(train)
