@@ -1,7 +1,8 @@
 from sklearn import svm
+import numpy
 
 def train(features, label):
-    X = [[0, 0], [1, 1]]
-    y = [0, 1]
+    n_samples = len(features)
+    data = features.reshape((n_samples, -1))
     clf = svm.SVC()
-    clf.fit(X, y)  
+    clf.fit(data, label)  

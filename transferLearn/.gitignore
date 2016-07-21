@@ -1,2 +1,6 @@
 log/
+DRIVE/
+
+bvlc_alexnet.npy
+
 .DS_Store
