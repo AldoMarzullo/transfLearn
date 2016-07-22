@@ -39,15 +39,18 @@ def mostlyBlack(image):
     return nblack / float(len(pixels)) > 0.5
 
 #counts the number of white pixel in the batch
-def containsVessel(label):
+def isVessel(label):
     pixels = label.getdata()
+    
     white_thresh = 250
-    nwhite = 0
-    for pixel in pixels:
-        if pixel > white_thresh:
-            nwhite += 1
+    x = BATCH_HEIGHT/2
+    y = BATCH_WIDTH/2
+    
+    pos = (BATCH_HEIGHT*x)+y
+    #could be useful compute a mean between pos-1,pos,pos+1 if BATCH_[HEIGHT|WIDTH] % 2 == 0
+    pixel = pixels[pos]
 
-    return nwhite / float(len(pixels)) > 0.5
+    return pixel >= white_thresh
     
 #crop the image starting from a random point
 def cropImage(image, label):
@@ -62,39 +65,40 @@ def cropImage(image, label):
 
 
 #creates NUM_TRIALS images from a dataset
+def fill(images_path, label_path, files, label_files, images, labels, label_class, num):
+    t = 0
+    while t < num:
+        index = random.randrange(0, len(files))
+        if files[index].endswith(".tif"):
+            image_filename = images_path + files[index]
+            label_filename = label_path + label_files[index]
+            image = Image.open(image_filename)
+            label = Image.open(label_filename)
+            image, label = cropImage(image, label)
+            
+            if not mostlyBlack(image) and isVessel(label):    
+                labels.append([label_class])
+                image = misc.imresize(image, (ALEXNET_WIDTH, ALEXNET_HEIGHT))
+                images.append(numpy.array(image))
+                t += 1
+
 def create_dataset(images_path, label_path):
     files = os.listdir(images_path)
     label_files = os.listdir(label_path)
     
     images = [];
     labels = [];
-    t = 0
-    while t < NUM_TRIALS:
-        index = random.randrange(0, len(files))
-        if files[index].endswith(".tif"):
-            image_filename = images_path + files[index]
-            label_filename = label_path  + label_files[index]
-            
-            image = Image.open(image_filename)
-            label = Image.open(label_filename)
-            image, label = cropImage(image, label)
-            
-            if not mostlyBlack(image):
-                
-                if containsVessel(label):
-                    labels.append([1])
-                else:
-                    labels.append([0])
-                    
-                image = misc.imresize(image,(ALEXNET_WIDTH, ALEXNET_HEIGHT))
-                label = misc.imresize(label,(ALEXNET_WIDTH, ALEXNET_HEIGHT))
-                
-                images.append(numpy.array(image))
+    fill(images_path, label_path, files, label_files, images, labels, 0, NUM_TRIALS/2)
+    fill(images_path, label_path, files, label_files, images, labels, 1, NUM_TRIALS/2)
+    
+    shuffle(images, labels)
 
-                t+=1
-
-    #image = Image.open(images_path + files[1])
-    #split_image(image)
-    #print numpy.shape(labels[0])
     train = Dataset(images, labels)
     return Drive(train)
+
+
+def shuffle(a, b):
+    combined = zip(a, b)
+    random.shuffle(combined)
+
+    a[:], b[:] = zip(*combined)
