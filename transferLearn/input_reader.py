@@ -3,9 +3,11 @@ import os
 import random
 
 from PIL import Image
+from scipy import misc
 
-BATCH_WIDTH = 227
-BATCH_HEIGHT = 227
+
+BATCH_WIDTH = BATCH_HEIGHT = 28
+ALEXNET_WIDTH = ALEXNET_HEIGHT = 227
 
 NUM_TRIALS = 10
 
@@ -36,6 +38,17 @@ def mostlyBlack(image):
 
     return nblack / float(len(pixels)) > 0.5
 
+#counts the number of white pixel in the batch
+def containsVessel(label):
+    pixels = label.getdata()
+    white_thresh = 250
+    nwhite = 0
+    for pixel in pixels:
+        if pixel > white_thresh:
+            nwhite += 1
+
+    return nwhite / float(len(pixels)) > 0.5
+    
 #crop the image starting from a random point
 def cropImage(image, label):
     width  = image.size[0]
@@ -67,11 +80,16 @@ def create_dataset(images_path, label_path):
             image, label = cropImage(image, label)
             
             if not mostlyBlack(image):
-                images.append(numpy.array(image))
-                if t%2 == 0:
-                    labels.append([0])
-                else:
+                
+                if containsVessel(label):
                     labels.append([1])
+                else:
+                    labels.append([0])
+                    
+                image = misc.imresize(image,(ALEXNET_WIDTH, ALEXNET_HEIGHT))
+                label = misc.imresize(label,(ALEXNET_WIDTH, ALEXNET_HEIGHT))
+                
+                images.append(numpy.array(image))
 
                 t+=1
 

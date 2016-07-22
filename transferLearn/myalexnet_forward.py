@@ -11,26 +11,14 @@
 #
 ################################################################################
 
-from numpy import *
-import os
-from pylab import *
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.cbook as cbook
-import time
-import matplotlib.image as mpimg
-from scipy.ndimage import filters
-import urllib
-from numpy import random
-
 import tensorflow as tf
-from caffe_classes import class_names
 
 import input_reader
 from input_reader import NUM_TRIALS
 
-train_x = zeros((1, 227,227,3)).astype(float32)
-train_y = zeros((1, 1000))
+train_x = np.zeros((1, 227,227,3)).astype(np.float32)
+train_y = np.zeros((1, 1000))
 xdim = train_x.shape[1:]
 ydim = train_y.shape[1]
  
@@ -39,8 +27,6 @@ ydim = train_y.shape[1]
 
 TRAINING_PATH = "./DRIVE/training/images/"
 LABEL_PATH    = "./DRIVE/training/1st_manual/"
-
-NUM_TRIALS = 10
 
 drive = input_reader.create_dataset(TRAINING_PATH,LABEL_PATH)
 
@@ -65,7 +51,7 @@ drive = input_reader.create_dataset(TRAINING_PATH,LABEL_PATH)
 #         .softmax(name='prob'))
 
 
-net_data = load("bvlc_alexnet.npy").item()
+net_data = np.load("bvlc_alexnet.npy").item()
 
 def conv(input, kernel, biases, k_h, k_w, c_o, s_h, s_w,  padding="VALID", group=1):
     '''From https://github.com/ethereon/caffe-tensorflow
@@ -171,7 +157,7 @@ maxpool5 = tf.nn.max_pool(conv5, ksize=[1, k_h, k_w, 1], strides=[1, s_h, s_w, 1
 #fc(4096, name='fc6')
 fc6W = tf.Variable(net_data["fc6"][0])
 fc6b = tf.Variable(net_data["fc6"][1])
-fc6 = tf.nn.relu_layer(tf.reshape(maxpool5, [-1, int(prod(maxpool5.get_shape()[1:]))]), fc6W, fc6b)
+fc6 = tf.nn.relu_layer(tf.reshape(maxpool5, [-1, int(np.prod(maxpool5.get_shape()[1:]))]), fc6W, fc6b)
 
 #fc7
 #fc(4096, name='fc7')
