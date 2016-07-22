@@ -41,13 +41,14 @@ def predict(features):
     #% (clf, metrics.classification_report(expected, predicted)))
     
     
-#drive = input_reader.create_dataset()
-#features, labels = net.extract_features(drive)
+drive = input_reader.create_dataset()
+features, labels = net.extract_features(drive)
 
 #saving features
-#numpy.save(input_reader.STORE_FEATURE_PATH, features)
-#numpy.save(input_reader.STORE_LABEL_PATH, labels)
-    
+numpy.save(input_reader.STORE_FEATURE_PATH, features)
+numpy.save(input_reader.STORE_LABEL_PATH, labels)
+
+
 features = numpy.load(input_reader.STORE_FEATURE_PATH)
 labels = numpy.load(input_reader.STORE_LABEL_PATH)
 train(features, labels)

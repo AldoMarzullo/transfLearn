@@ -144,7 +144,7 @@ def prepare_image(image_filename, label_filename):
             im = misc.imresize(im, (ALEXNET_WIDTH, ALEXNET_HEIGHT))
             images.append(numpy.array(im))
             labels.append(VESSEL_CLASS) if isVessel(label.crop(box)) else labels.append(NON_VESSEL_CLASS)
-            print len(images)
+            #print len(images)
             
     test = Dataset(images, labels)
     return Drive(test)
