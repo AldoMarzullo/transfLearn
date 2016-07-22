@@ -5,11 +5,19 @@ import random
 from PIL import Image
 from scipy import misc
 
-
 BATCH_WIDTH = BATCH_HEIGHT = 28
 ALEXNET_WIDTH = ALEXNET_HEIGHT = 227
 
-NUM_TRIALS = 10
+NUM_TRIALS = 1000
+
+VESSEL_CLASS = 1
+NON_VESSEL_CLASS = 0
+
+TRAINING_PATH = "./DRIVE/training/images/"
+LABEL_PATH    = "./DRIVE/training/1st_manual/"
+
+STORE_FEATURE_PATH = 'dataset/features.npy'
+STORE_LABEL_PATH = 'dataset/labels.npy'
 
 class Drive:
     def __init__(self,train):
@@ -63,7 +71,12 @@ def cropImage(image, label):
     
     return image, label
 
+def shuffle(a, b):
+    combined = zip(a, b)
+    random.shuffle(combined)
 
+    a[:], b[:] = zip(*combined)
+    
 #creates NUM_TRIALS images from a dataset
 def fill(images_path, label_path, files, label_files, images, labels, label_class, num):
     t = 0
@@ -76,29 +89,56 @@ def fill(images_path, label_path, files, label_files, images, labels, label_clas
             label = Image.open(label_filename)
             image, label = cropImage(image, label)
             
-            if not mostlyBlack(image) and isVessel(label):    
-                labels.append([label_class])
-                image = misc.imresize(image, (ALEXNET_WIDTH, ALEXNET_HEIGHT))
-                images.append(numpy.array(image))
-                t += 1
-
-def create_dataset(images_path, label_path):
-    files = os.listdir(images_path)
-    label_files = os.listdir(label_path)
+            if not mostlyBlack(image):
+                if label_class == VESSEL_CLASS and isVessel(label):
+                    labels.append([label_class])
+                    image = misc.imresize(image, (ALEXNET_WIDTH, ALEXNET_HEIGHT))
+                    images.append(numpy.array(image))
+                    t += 1
+                if label_class == NON_VESSEL_CLASS and not isVessel(label):
+                    labels.append([label_class])
+                    image = misc.imresize(image, (ALEXNET_WIDTH, ALEXNET_HEIGHT))
+                    images.append(numpy.array(image))
+                    t += 1
+                    
+def create_dataset():
+    print "creating dataset..."
+    files = os.listdir(TRAINING_PATH)
+    label_files = os.listdir(LABEL_PATH)
     
-    images = [];
-    labels = [];
-    fill(images_path, label_path, files, label_files, images, labels, 0, NUM_TRIALS/2)
-    fill(images_path, label_path, files, label_files, images, labels, 1, NUM_TRIALS/2)
+    images = []
+    labels = []
+    print "vessels"
+    fill(TRAINING_PATH, LABEL_PATH, files, label_files, images, labels, VESSEL_CLASS, NUM_TRIALS/2)
+    print "NON vessels"
+    fill(TRAINING_PATH, LABEL_PATH, files, label_files, images, labels, NON_VESSEL_CLASS, NUM_TRIALS/2)
     
     shuffle(images, labels)
 
     train = Dataset(images, labels)
+    print "dataset created"
+    
     return Drive(train)
+    
 
+def prepare_image(image_filename, label_filename):
 
-def shuffle(a, b):
-    combined = zip(a, b)
-    random.shuffle(combined)
+    images = []
+    labels = []
+    image = Image.open(image_filename)
+    label = Image.open(label_filename) 
+        
+    imgwidth, imgheight = image.size
+    for i in range(0,imgheight, BATCH_HEIGHT):
+        for j in range(0,imgwidth, BATCH_WIDTH):
+            box = (j, i, j + BATCH_WIDTH, i + BATCH_HEIGHT)
+            images.append(image.crop(box))
+            labels.append(VESSEL_CLASS) if isVessel(label.crop(box)) else labels.append(NON_VESSEL_CLASS)
+            
+    test = Dataset(images, labels)
+    return Drive(test)
 
-    a[:], b[:] = zip(*combined)
+def save_as_image(images, size):
+    rescaled = numpy.reshape(images, size)
+    im = Image.fromarray(rescaled)
+    im.show()
