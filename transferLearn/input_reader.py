@@ -27,6 +27,7 @@ class Dataset:
     def __init__(self, inputs, labels):
         self.inputs = inputs
         self.labels = labels
+        self.size = len(inputs)
         self.current_batch = 0
     
     def next_batch(self):
@@ -122,18 +123,28 @@ def create_dataset():
     
 
 def prepare_image(image_filename, label_filename):
-
+    print "preparing image"
+    
     images = []
     labels = []
     image = Image.open(image_filename)
     label = Image.open(label_filename) 
-        
+    
+    #to remove
+    #box = (20, 20, 20 + 113, 20 + 113)
+    #image = image.crop(box)
+    #label = label.crop(box)
+    ##
+    
     imgwidth, imgheight = image.size
-    for i in range(0,imgheight, BATCH_HEIGHT):
-        for j in range(0,imgwidth, BATCH_WIDTH):
+    for i in range(0,imgheight):
+        for j in range(0,imgwidth):
             box = (j, i, j + BATCH_WIDTH, i + BATCH_HEIGHT)
-            images.append(image.crop(box))
+            im = image.crop(box)  
+            im = misc.imresize(im, (ALEXNET_WIDTH, ALEXNET_HEIGHT))
+            images.append(numpy.array(im))
             labels.append(VESSEL_CLASS) if isVessel(label.crop(box)) else labels.append(NON_VESSEL_CLASS)
+            print len(images)
             
     test = Dataset(images, labels)
     return Drive(test)

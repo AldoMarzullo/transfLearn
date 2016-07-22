@@ -30,8 +30,12 @@ def train(features, labels):
     joblib.dump(clf, 'models/clf.pkl', compress=9)
 
 def predict(features):
+    print "starting prediction"
     clf = joblib.load('models/clf.pkl')
-    return clf.predict(features)
+    
+    n_samples = len(features)
+    data = numpy.asarray(features).reshape((n_samples, -1))
+    return clf.predict(data)
     
     #print("Classification report for classifier on test set %s:\n%s\n"
     #% (clf, metrics.classification_report(expected, predicted)))
@@ -54,8 +58,10 @@ labelname = './DRIVE/training/1st_manual/21_manual1.gif'
 test = input_reader.prepare_image(filename,labelname)
 testf, testl = net.extract_features(test)
 
+numpy.save('dataset/test.npy', testf)
+testf = numpy.load('dataset/test.npy')
+
 size = Image.open(filename).size
 prediction = predict(testf)
 
-print (numpy.shape(prediction))
 input_reader.save_as_image(prediction, size)

@@ -13,7 +13,6 @@
 
 import numpy as np
 import tensorflow as tf
-from input_reader import NUM_TRIALS
 
 train_x = np.zeros((1, 227,227,3)).astype(np.float32)
 train_y = np.zeros((1, 1000))
@@ -180,7 +179,7 @@ def extract_features(drive):
     labels = []
     
     print "starting extraction"
-    for i in range(0, NUM_TRIALS):
+    for i in range(0, drive.train.size):
         im, label = drive.train.next_batch()
         summary_str, output = sess.run([merged, prob], feed_dict = {x:[im]})
         #writer.add_summary(summary_str, 0)
