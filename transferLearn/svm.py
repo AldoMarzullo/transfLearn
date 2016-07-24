@@ -2,7 +2,8 @@
 from sklearn import svm, metrics
 import numpy
 import input_reader
-import myalexnet_forward as net
+
+import inceptionv3 as net
 from sklearn.externals import joblib
 from PIL import Image
     
@@ -40,7 +41,10 @@ def predict(features):
     #print("Classification report for classifier on test set %s:\n%s\n"
     #% (clf, metrics.classification_report(expected, predicted)))
     
-    
+
+#model definition  
+#input_reader.resize = False
+
 drive = input_reader.create_dataset()
 features, labels = net.extract_features(drive)
 

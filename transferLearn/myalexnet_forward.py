@@ -165,7 +165,7 @@ def extract_features(drive):
     #softmax(name='prob'))
     prob = tf.nn.softmax(fc8)
     
-    sess = tf.Session()
+    sess = tf.Session(config=tf.ConfigProto(intra_op_parallelism_threads=4))
     
     #cross_entropy = -tf.reduce_sum([1.0,1.0]*tf.log([1.0,1.0]))
     #tf.scalar_summary("cross_entropy", cross_entropy)
@@ -181,10 +181,11 @@ def extract_features(drive):
     print "starting extraction"
     for i in range(0, drive.train.size):
         im, label = drive.train.next_batch()
-        summary_str, output = sess.run([merged, prob], feed_dict = {x:[im]})
+        #summary_str, output = sess.run([merged, prob], feed_dict = {x:[im]})
         #writer.add_summary(summary_str, 0)
-        tf.transpose(fc7,(1,0))
+        #tf.transpose(fc7,(1,0))
         features.append(fc7.eval(session=sess,feed_dict={x:[im]}))
         labels.append(label)
+        print "{} of {}".format(i, drive.train.size)
     
     return features, labels

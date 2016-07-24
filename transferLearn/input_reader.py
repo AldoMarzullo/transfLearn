@@ -4,11 +4,13 @@ import random
 
 from PIL import Image
 from scipy import misc
+from sklearn.feature_extraction import image as fe
+from matplotlib.pyplot import imshow
 
 BATCH_WIDTH = BATCH_HEIGHT = 28
 ALEXNET_WIDTH = ALEXNET_HEIGHT = 227
 
-NUM_TRIALS = 1000
+NUM_TRIALS = 10
 
 VESSEL_CLASS = 1
 NON_VESSEL_CLASS = 0
@@ -18,6 +20,8 @@ LABEL_PATH    = "./DRIVE/training/1st_manual/"
 
 STORE_FEATURE_PATH = 'dataset/features.npy'
 STORE_LABEL_PATH = 'dataset/labels.npy'
+
+resize = True
 
 class Drive:
     def __init__(self,train):
@@ -49,6 +53,7 @@ def mostlyBlack(image):
 
 #counts the number of white pixel in the batch
 def isVessel(label):
+    
     pixels = label.getdata()
     
     white_thresh = 250
@@ -91,14 +96,15 @@ def fill(images_path, label_path, files, label_files, images, labels, label_clas
             image, label = cropImage(image, label)
             
             if not mostlyBlack(image):
+                                
                 if label_class == VESSEL_CLASS and isVessel(label):
                     labels.append([label_class])
-                    image = misc.imresize(image, (ALEXNET_WIDTH, ALEXNET_HEIGHT))
+                    if resize: image = misc.imresize(image, (ALEXNET_WIDTH, ALEXNET_HEIGHT))
                     images.append(numpy.array(image))
                     t += 1
                 if label_class == NON_VESSEL_CLASS and not isVessel(label):
                     labels.append([label_class])
-                    image = misc.imresize(image, (ALEXNET_WIDTH, ALEXNET_HEIGHT))
+                    if resize: image = misc.imresize(image, (ALEXNET_WIDTH, ALEXNET_HEIGHT))
                     images.append(numpy.array(image))
                     t += 1
                     
@@ -127,13 +133,13 @@ def prepare_image(image_filename, label_filename):
     
     images = []
     labels = []
-    image = Image.open(image_filename)
-    label = Image.open(label_filename) 
+    image_ = Image.open(image_filename)
+    label_ = Image.open(label_filename) 
     
     #to remove
-    #box = (20, 20, 20 + 113, 20 + 113)
-    #image = image.crop(box)
-    #label = label.crop(box)
+    box = (20, 20, 20 + 28, 20 + 28)
+    image = image_.crop(box)
+    label = label_.crop(box)
     ##
     
     imgwidth, imgheight = image.size
@@ -141,7 +147,7 @@ def prepare_image(image_filename, label_filename):
         for j in range(0,imgwidth):
             box = (j, i, j + BATCH_WIDTH, i + BATCH_HEIGHT)
             im = image.crop(box)  
-            im = misc.imresize(im, (ALEXNET_WIDTH, ALEXNET_HEIGHT))
+            if resize: im = misc.imresize(im, (ALEXNET_WIDTH, ALEXNET_HEIGHT))
             images.append(numpy.array(im))
             labels.append(VESSEL_CLASS) if isVessel(label.crop(box)) else labels.append(NON_VESSEL_CLASS)
             #print len(images)
@@ -149,7 +155,18 @@ def prepare_image(image_filename, label_filename):
     test = Dataset(images, labels)
     return Drive(test)
 
-def save_as_image(images, size):
-    rescaled = numpy.reshape(images, size)
-    im = Image.fromarray(rescaled)
-    im.show()
+def save_as_image(pixels, size):
+    
+    im = fe.reconstruct_from_patches_2d(to_rgb1a(pixels),(28,28))
+    im = Image.fromarray(im)
+    im.show('test.png')
+    
+def to_rgb1a(pixels):
+    import math
+    size = math.sqrt(len(pixels))
+    pic = numpy.reshape(pixels, (size, size))
+    w, h = numpy.shape(pic)
+    ret = numpy.empty((w, h, 3), dtype=numpy.uint8)
+    ret[:, :, 2] =  ret[:, :, 1] =  ret[:, :, 0] =  pic
+    return ret
+    
