@@ -59,7 +59,7 @@ def extract_features(drive):
     
     x = tf.placeholder(tf.float32, (None,) + xdim)
     
-    summary_op = tf.image_summary('conv1/features', x, max_images=1)
+    #summary_op = tf.image_summary('conv1/features', x, max_images=1)
     
     #conv1
     #conv(11, 11, 96, 4, 4, padding='VALID', name='conv1')
@@ -156,20 +156,20 @@ def extract_features(drive):
     
     #fc8
     #fc(1000, relu=False, name='fc8')
-    fc8W = tf.Variable(net_data["fc8"][0])
+    """fc8W = tf.Variable(net_data["fc8"][0])
     fc8b = tf.Variable(net_data["fc8"][1])
-    fc8 = tf.nn.xw_plus_b(fc7, fc8W, fc8b)
+    fc8 = tf.nn.xw_plus_b(fc7, fc8W, fc8b)"""
     
     
     #prob
     #softmax(name='prob'))
-    prob = tf.nn.softmax(fc8)
+    """prob = tf.nn.softmax(fc8)"""
     
     sess = tf.Session(config=tf.ConfigProto(intra_op_parallelism_threads=4))
     
     #cross_entropy = -tf.reduce_sum([1.0,1.0]*tf.log([1.0,1.0]))
     #tf.scalar_summary("cross_entropy", cross_entropy)
-    merged = tf.merge_all_summaries()
+    #merged = tf.merge_all_summaries()
     #writer = tf.train.SummaryWriter('log/', sess.graph)
     
     init = tf.initialize_all_variables()

@@ -10,7 +10,7 @@ from matplotlib.pyplot import imshow
 BATCH_WIDTH = BATCH_HEIGHT = 28
 ALEXNET_WIDTH = ALEXNET_HEIGHT = 227
 
-NUM_TRIALS = 10
+NUM_TRIALS = 1000
 
 VESSEL_CLASS = 1
 NON_VESSEL_CLASS = 0
@@ -137,7 +137,7 @@ def prepare_image(image_filename, label_filename):
     label_ = Image.open(label_filename) 
     
     #to remove
-    box = (20, 20, 20 + 28, 20 + 28)
+    box = (214, 131, 214 + 28, 131 + 28)
     image = image_.crop(box)
     label = label_.crop(box)
     ##
@@ -157,6 +157,7 @@ def prepare_image(image_filename, label_filename):
 
 def save_as_image(pixels, size):
     
+    pixels = [x * 255 for x in pixels]
     im = fe.reconstruct_from_patches_2d(to_rgb1a(pixels),(28,28))
     im = Image.fromarray(im)
     im.show('test.png')
