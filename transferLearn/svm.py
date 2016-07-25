@@ -57,15 +57,17 @@ numpy.save(input_reader.STORE_LABEL_PATH, labels)
 features = numpy.load(input_reader.STORE_FEATURE_PATH)
 labels = numpy.load(input_reader.STORE_LABEL_PATH)
 train(features, labels)
-"""
 
+"""
 filename = './DRIVE/training/images/21_training.tif'
 labelname = './DRIVE/training/1st_manual/21_manual1.gif'
 
-#test = input_reader.prepare_image(filename,labelname)
-#testf, testl = net.extract_features(test)
+"""
+test = input_reader.prepare_image(filename,labelname)
+testf, testl = net.extract_features(test)
 
-#numpy.save('dataset/test.npy', testf)
+numpy.save('dataset/test.npy', testf)
+"""
 
 testf = numpy.load('dataset/test.npy')
 
