@@ -43,9 +43,9 @@ def predict(features):
     
 
 #model definition  
-#input_reader.resize = False
+input_reader.resize = False
 
-"""
+
 drive = input_reader.create_dataset()
 features, labels = net.extract_features(drive)
 
@@ -58,20 +58,19 @@ features = numpy.load(input_reader.STORE_FEATURE_PATH)
 labels = numpy.load(input_reader.STORE_LABEL_PATH)
 train(features, labels)
 
-"""
+
 filename = './DRIVE/training/images/21_training.tif'
 labelname = './DRIVE/training/1st_manual/21_manual1.gif'
 
-"""
 test = input_reader.prepare_image(filename,labelname)
 testf, testl = net.extract_features(test)
 
-numpy.save('dataset/test.npy', testf)
-"""
+numpy.save(input_reader.STORE_TEST_PATH, testf)
 
-testf = numpy.load('dataset/test.npy')
+testf = numpy.load(input_reader.STORE_TEST_PATH)
 
 size = Image.open(filename).size
+
 prediction = predict(testf)
 
 input_reader.save_as_image(prediction, size)

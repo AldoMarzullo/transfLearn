@@ -165,7 +165,7 @@ def extract_features(drive):
     #softmax(name='prob'))
     """prob = tf.nn.softmax(fc8)"""
     
-    sess = tf.Session(config=tf.ConfigProto(intra_op_parallelism_threads=4))
+    sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
     
     #cross_entropy = -tf.reduce_sum([1.0,1.0]*tf.log([1.0,1.0]))
     #tf.scalar_summary("cross_entropy", cross_entropy)
@@ -188,4 +188,5 @@ def extract_features(drive):
         labels.append(label)
         print "{} of {}".format(i, drive.train.size)
     
+    sess.close()
     return features, labels
