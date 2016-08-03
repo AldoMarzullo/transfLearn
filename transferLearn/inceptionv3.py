@@ -70,25 +70,19 @@ def create_graph():
 
 
 def run_inference_on_image(images):
-    """Runs inference on an image."""
+  create_graph()
   
-    # Creates graph from saved GraphDef.
-    create_graph()
-
-    with tf.Session() as sess:
-
-        softmax_tensor = sess.graph.get_tensor_by_name('pool_3:0')
-    
-        features = []
-    
-        i = 0
-        for image in images:
-            print i
-            i += 1
-            features.append(sess.run(softmax_tensor, {'DecodeJpeg:0': image}))
-            
-        return features
-                                     
+  with tf.Session() as sess:
+    features = []
+    softmax_tensor = sess.graph.get_tensor_by_name('pool_3:0')
+    i = 0
+    for image in images:
+      print i
+      i+=1
+      features.append(sess.run(softmax_tensor, {'DecodeJpeg:0':image}))
+    return features
+         
+   
 def extract_features(drive):
     features = run_inference_on_image(drive.train.inputs)
     return features, drive.train.labels
