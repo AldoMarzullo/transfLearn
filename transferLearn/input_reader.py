@@ -1,11 +1,16 @@
 import numpy
 import os
 import random
+from threading import Thread
 
 from PIL import Image
+from PIL import ImageFilter
+
 from scipy import misc
-from threading import Thread
+
 from sklearn.feature_extraction import image as fe
+
+
 
 BATCH_WIDTH = BATCH_HEIGHT = 4
 ALEXNET_WIDTH = ALEXNET_HEIGHT = 227
@@ -85,7 +90,7 @@ def shuffle(a, b):
     random.shuffle(combined)
 
     a[:], b[:] = zip(*combined)
-    
+
 #creates NUM_TRIALS images from a dataset
 def fill(images_path, label_path, files, label_files, images, labels, label_class, num, thread):
     print "devo farne {}".format(num)
@@ -97,6 +102,9 @@ def fill(images_path, label_path, files, label_files, images, labels, label_clas
             label_filename = label_path + label_files[index]
             image = Image.open(image_filename)
             label = Image.open(label_filename)
+            
+            #image = image.filter(ImageFilter.EDGE_ENHANCE)
+	    
             image, label = cropImage(image, label)
             
             if not mostlyBlack(image):
@@ -155,7 +163,7 @@ def create_dataset():
     
     return Drive(train)
     
-test_batch_size = 100;
+test_batch_size = 10;
 def prepare_image(image_filename, label_filename):
     print "preparing image"
     
@@ -188,13 +196,14 @@ def save_as_image(pixels,labels, size):
     #pixels = [x * 255 for x in pixels]
 
     #im = fe.reconstruct_from_patches_2d(to_rgb1a(pixels),(test_batch_size,test_batch_size))
+    print numpy.shape(pixels)
     im = Image.fromarray(to_rgb1a(pixels, labels))
     im.show('test.png')
     
 def to_rgb1a(pixels, labels):
     import math
     size = math.sqrt(len(pixels))
-    pic = numpy.reshape(pixels, (size, size))
+    pic = numpy.reshape(pixels, (584, 565))
     w, h = numpy.shape(pic)
     res = numpy.empty((w, h, 3), dtype=numpy.uint8)
     
