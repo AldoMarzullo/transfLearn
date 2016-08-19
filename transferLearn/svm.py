@@ -24,9 +24,9 @@ def train(features, labels):
     
     # Create a classifier: a support vector classifier
     
-    clf = SVC(kernel='rbf', C=8, gamma=0.5)
+    #clf = SVC(kernel='rbf', C=8, gamma=0.5)
     #clf = SVC(kernel='rbf', C=16, gamma=0.5)
-    #clf = svm.LinearSVC(C=0.5,loss='squared_hinge')
+    clf = svm.LinearSVC(C=0.5,loss='squared_hinge')
     
     #clf = RandomForestClassifier(n_jobs=-1, n_estimators=100, max_features = 50)
     #clf = LDA()
@@ -109,12 +109,12 @@ def predict(features):
 input_reader.resize = False
 
 
-#drive = input_reader.create_dataset()
-#features, labels = net.extract_features(drive)
+drive = input_reader.create_dataset()
+features, labels = net.extract_features(drive)
 
 #saving features
-#numpy.save(input_reader.STORE_FEATURE_PATH, features)
-#numpy.save(input_reader.STORE_LABEL_PATH, labels)
+numpy.save(input_reader.STORE_FEATURE_PATH, features)
+numpy.save(input_reader.STORE_LABEL_PATH, labels)
 
 
 features = numpy.load(input_reader.STORE_FEATURE_PATH)
@@ -125,11 +125,11 @@ train(features, labels)
 filename = './DRIVE/training/images/21_training.tif'
 labelname = './DRIVE/training/1st_manual/21_manual1.gif'
 
-#test = input_reader.prepare_image(filename,labelname)
-#testf, testl = net.extract_features(test)
+test = input_reader.prepare_image(filename,labelname)
+testf, testl = net.extract_features(test)
 
-#numpy.save(input_reader.STORE_TEST_PATH, testf)
-#numpy.save(input_reader.STORE_TEST_PATH_LABEL, testl)
+numpy.save(input_reader.STORE_TEST_PATH, testf)
+numpy.save(input_reader.STORE_TEST_PATH_LABEL, testl)
 
 testf = numpy.load(input_reader.STORE_TEST_PATH)
 testl = numpy.load(input_reader.STORE_TEST_PATH_LABEL)
